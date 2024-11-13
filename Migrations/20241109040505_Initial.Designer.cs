@@ -4,6 +4,7 @@ using Inventory_Management_API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Inventory_Management_API.Migrations
 {
     [DbContext(typeof(InventoryManagementDbContext))]
-    partial class InventoryManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241109040505_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,7 +62,8 @@ namespace Inventory_Management_API.Migrations
 
                     b.HasIndex("CustomerOrderId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.ToTable("CustomerOrderItems");
                 });
@@ -179,7 +183,8 @@ namespace Inventory_Management_API.Migrations
 
                     b.HasKey("StockOrderItemId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.HasIndex("StockOrderId");
 
@@ -280,8 +285,8 @@ namespace Inventory_Management_API.Migrations
                         .IsRequired();
 
                     b.HasOne("Inventory_Management_API.Models.Product", "Product")
-                        .WithMany("CustomerOrderItems")
-                        .HasForeignKey("ProductId")
+                        .WithOne("CustomerOrderItem")
+                        .HasForeignKey("Inventory_Management_API.Models.CustomerOrderItem", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -315,8 +320,8 @@ namespace Inventory_Management_API.Migrations
             modelBuilder.Entity("Inventory_Management_API.Models.StockOrderItem", b =>
                 {
                     b.HasOne("Inventory_Management_API.Models.Product", "Product")
-                        .WithMany("StockOrderItems")
-                        .HasForeignKey("ProductId")
+                        .WithOne("StockOrderItem")
+                        .HasForeignKey("Inventory_Management_API.Models.StockOrderItem", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -357,9 +362,11 @@ namespace Inventory_Management_API.Migrations
 
             modelBuilder.Entity("Inventory_Management_API.Models.Product", b =>
                 {
-                    b.Navigation("CustomerOrderItems");
+                    b.Navigation("CustomerOrderItem")
+                        .IsRequired();
 
-                    b.Navigation("StockOrderItems");
+                    b.Navigation("StockOrderItem")
+                        .IsRequired();
 
                     b.Navigation("SupplierProducts");
                 });

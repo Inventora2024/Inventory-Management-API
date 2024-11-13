@@ -102,6 +102,51 @@ public class ProductController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("with-categories")]
+    public async Task<ActionResult<IEnumerable<ProductWithCategoryDTO>>> GetProductsWithCategories()
+    {
+        var productsWithCategories = await _context.Products
+            .Join(_context.ProductCategories,
+                product => product.CategoryId,
+                category => category.CategoryId,
+                (product, category) => new ProductWithCategoryDTO
+                {
+                    ProductId = product.ProductId,
+                    ProductName = product.ProductName,
+                    Description = product.Description,
+                    Image = product.Image,
+                    StockQuantity = product.StockQuantity,
+                    CategoryId = product.CategoryId,
+                    Category = category.Category,
+                    Nature = category.Nature
+                })
+            .ToListAsync();
+
+        return Ok(productsWithCategories);
+    }
+
+    [HttpGet("with-categories-suppliers")]
+    public async Task<ActionResult<IEnumerable<ProductCategorySupplierDetailsDTO>>> GetProductsWithDetails()
+    {
+        var productsWithDetails = await _context.Products
+            .Include(p => p.ProductCategory)
+            .Include(p => p.SupplierProducts)
+                .ThenInclude(sp => sp.Supplier)
+            .Select(product => new ProductCategorySupplierDetailsDTO
+            {
+                ProductId = product.ProductId,
+                ProductName = product.ProductName,
+                Description = product.Description,
+                Image = product.Image,
+                Category = product.ProductCategory.Category,
+                Nature = product.ProductCategory.Nature,
+                Suppliers = product.SupplierProducts.Select(sp => sp.Supplier.Company).ToList()
+            })
+            .ToListAsync();
+
+        return Ok(productsWithDetails);
+    }
+
     private bool ProductExists(int id)
     {
         return _context.Products.Any(e => e.ProductId == id);

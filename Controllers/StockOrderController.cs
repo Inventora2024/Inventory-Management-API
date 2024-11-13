@@ -102,6 +102,67 @@ public class StockOrderController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("Products")]
+    public async Task<ActionResult<IEnumerable<StockOrderProductsDTO>>> GetStockOrderProducts()
+    {
+        var stockOrders = await _context.StockOrders
+            .Include(so => so.StockOrderItems)
+            .ThenInclude(soi => soi.Product)
+            .ToListAsync();
+
+        var stockOrderProductsDTOs = _mapper.Map<List<StockOrderProductsDTO>>(stockOrders);
+        return stockOrderProductsDTOs;
+    }
+
+    [HttpPost("CreateOrder")]
+    public async Task<ActionResult<StockOrderDTO>> CreateOrder(CreateOrderDTO createOrderDTO)
+    {
+        var stockOrder = new StockOrder
+        {
+            OrderDate = createOrderDTO.OrderDate,
+            StockOrderItems = createOrderDTO.OrderItems.Select(item => new StockOrderItem
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity
+            }).ToList()
+        };
+
+        _context.StockOrders.Add(stockOrder);
+        await _context.SaveChangesAsync();
+
+        var shipment = new Shipment
+        {
+            LastUpdated = DateTime.UtcNow,
+            Status = "Order Confirmed",
+            StockOrderId = stockOrder.StockOrderId
+        };
+
+        _context.Shipments.Add(shipment);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetStockOrder), new { id = stockOrder.StockOrderId }, _mapper.Map<StockOrderDTO>(stockOrder));
+    }
+
+    [HttpGet("OrdersWithShipments")]
+    public async Task<ActionResult<IEnumerable<StockOrderShipmentDTO>>> GetStockOrdersWithShipments()
+    {
+        var stockOrdersWithShipments = await _context.StockOrders
+            .Include(so => so.Shipment)
+            .ToListAsync();
+
+        var stockOrderShipmentDTOs = stockOrdersWithShipments.Select(so => new StockOrderShipmentDTO
+        {
+            ShipmentId = so.Shipment.ShipmentId,
+            StockOrderId = so.StockOrderId,
+            OrderId = so.StockOrderId,  // Assuming OrderId is same as StockOrderId in your model
+            OrderDate = so.OrderDate,
+            Status = so.Shipment.Status,
+            LastUpdated = so.Shipment.LastUpdated
+        }).ToList();
+
+        return stockOrderShipmentDTOs;
+    }
+
     private bool StockOrderExists(int id)
     {
         return _context.StockOrders.Any(e => e.StockOrderId == id);

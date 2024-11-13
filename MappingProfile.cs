@@ -34,6 +34,22 @@ namespace Inventory_Management_API
             // User Mappings
             CreateMap<User, UserDTO>().ReverseMap();
 
+            // StockOrder Mappings
+            CreateMap<StockOrder, StockOrderProductsDTO>();
+            CreateMap<StockOrderItem, StockOrderProductItemDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.ProductName));
+
+            // CustomerOrder Mappings
+            CreateMap<CustomerOrder, CustomerOrderDTO>().ReverseMap();
+            CreateMap<CustomerOrder, CustomerOrderProductsDTO>();
+            CreateMap<CustomerOrderItem, CustomerOrderProductItemDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.ProductName));
+
+            // Create Sale Mappings
+            CreateMap<CreateSaleDTO, CustomerOrder>();
+            CreateMap<CreateSaleItemDTO, CustomerOrderItem>();
         }
+
     }
+    
 }

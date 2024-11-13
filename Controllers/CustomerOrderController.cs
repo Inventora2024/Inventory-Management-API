@@ -102,6 +102,49 @@ public class CustomerOrderController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("Products")]
+    public async Task<ActionResult<IEnumerable<CustomerOrderProductsDTO>>> GetCustomerOrderProducts()
+    {
+        var customerOrders = await _context.CustomerOrders
+            .Include(co => co.CustomerOrderItems)
+            .ThenInclude(coi => coi.Product)
+            .ToListAsync();
+
+        var customerOrderProductsDTOs = _mapper.Map<List<CustomerOrderProductsDTO>>(customerOrders);
+        return customerOrderProductsDTOs;
+    }
+
+    [HttpPost("CreateSale")]
+    public async Task<ActionResult<CustomerOrderDTO>> CreateSale(CreateSaleDTO createSaleDTO)
+    {
+        var customerOrder = new CustomerOrder
+        {
+            OrderDate = createSaleDTO.OrderDate,
+            CustomerOrderItems = createSaleDTO.SaleItems.Select(item => new CustomerOrderItem
+            {
+                ProductId = item.ProductId,
+                Quantity = item.Quantity
+            }).ToList()
+        };
+
+        _context.CustomerOrders.Add(customerOrder);
+        await _context.SaveChangesAsync();
+
+        // Adjust product quantities
+        foreach (var item in createSaleDTO.SaleItems)
+        {
+            var product = await _context.Products.FindAsync(item.ProductId);
+            if (product != null)
+            {
+                product.StockQuantity -= item.Quantity;
+                _context.Entry(product).State = EntityState.Modified;
+            }
+        }
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetCustomerOrder), new { id = customerOrder.CustomerOrderId }, _mapper.Map<CustomerOrderDTO>(customerOrder));
+    }
+
     private bool CustomerOrderExists(int id)
     {
         return _context.CustomerOrders.Any(e => e.CustomerOrderId == id);

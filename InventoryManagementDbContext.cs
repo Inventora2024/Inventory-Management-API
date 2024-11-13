@@ -1,11 +1,8 @@
 ﻿using Inventory_Management_API.Models;
 using Microsoft.EntityFrameworkCore;
-using Inventory_Management_API.DTOs;
 
 namespace Inventory_Management_API
 {
-    using Microsoft.EntityFrameworkCore;
-
     public class InventoryManagementDbContext : DbContext
     {
         public DbSet<CustomerOrder> CustomerOrders { get; set; }
@@ -37,17 +34,17 @@ namespace Inventory_Management_API
                 .WithOne(soi => soi.StockOrder)
                 .HasForeignKey(soi => soi.StockOrderId);
 
-            // One to One: Product -> Customer Order Item
+            // Many to One: Customer Order Item -> Product
             modelBuilder.Entity<CustomerOrderItem>()
                 .HasOne(coi => coi.Product)
-                .WithOne(p => p.CustomerOrderItem)
-                .HasForeignKey<CustomerOrderItem>(coi => coi.ProductId);
+                .WithMany(p => p.CustomerOrderItems)
+                .HasForeignKey(coi => coi.ProductId);
 
-            // One to One: Product -> Stock Order Item
+            // Many to One: Stock Order Item -> Product
             modelBuilder.Entity<StockOrderItem>()
                 .HasOne(soi => soi.Product)
-                .WithOne(p => p.StockOrderItem)
-                .HasForeignKey<StockOrderItem>(soi => soi.ProductId);
+                .WithMany(p => p.StockOrderItems)
+                .HasForeignKey(soi => soi.ProductId);
 
             // One to Many: Product Category -> Product
             modelBuilder.Entity<ProductCategory>()
@@ -75,7 +72,5 @@ namespace Inventory_Management_API
                 .WithMany(p => p.SupplierProducts)
                 .HasForeignKey(sp => sp.ProductId);
         }
-
-public DbSet<Inventory_Management_API.DTOs.CustomerOrderDTO> CustomerOrderDTO { get; set; } = default!;
     }
 }

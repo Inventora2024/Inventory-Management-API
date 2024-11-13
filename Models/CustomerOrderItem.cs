@@ -13,6 +13,9 @@ namespace Inventory_Management_API.Models
         [Required]
         public int CustomerOrderId { get; set; }
 
+        [Required]
+        public int Quantity { get; set; }
+
         public CustomerOrder CustomerOrder { get; set; }
         public Product Product { get; set; }
 

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Inventory_Management_API.Migrations
 {
     [DbContext(typeof(InventoryManagementDbContext))]
-    [Migration("20241104074345_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20241111131115_UpdateOrderRelationships")]
+    partial class UpdateOrderRelationships
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,12 +55,14 @@ namespace Inventory_Management_API.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
                     b.HasKey("CustomerOrderItemId");
 
                     b.HasIndex("CustomerOrderId");
 
-                    b.HasIndex("ProductId")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
                     b.ToTable("CustomerOrderItems");
                 });
@@ -172,13 +174,15 @@ namespace Inventory_Management_API.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
                     b.Property<int>("StockOrderId")
                         .HasColumnType("int");
 
                     b.HasKey("StockOrderItemId");
 
-                    b.HasIndex("ProductId")
-                        .IsUnique();
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("StockOrderId");
 
@@ -279,8 +283,8 @@ namespace Inventory_Management_API.Migrations
                         .IsRequired();
 
                     b.HasOne("Inventory_Management_API.Models.Product", "Product")
-                        .WithOne("CustomerOrderItem")
-                        .HasForeignKey("Inventory_Management_API.Models.CustomerOrderItem", "ProductId")
+                        .WithMany("CustomerOrderItems")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -314,8 +318,8 @@ namespace Inventory_Management_API.Migrations
             modelBuilder.Entity("Inventory_Management_API.Models.StockOrderItem", b =>
                 {
                     b.HasOne("Inventory_Management_API.Models.Product", "Product")
-                        .WithOne("StockOrderItem")
-                        .HasForeignKey("Inventory_Management_API.Models.StockOrderItem", "ProductId")
+                        .WithMany("StockOrderItems")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -356,11 +360,9 @@ namespace Inventory_Management_API.Migrations
 
             modelBuilder.Entity("Inventory_Management_API.Models.Product", b =>
                 {
-                    b.Navigation("CustomerOrderItem")
-                        .IsRequired();
+                    b.Navigation("CustomerOrderItems");
 
-                    b.Navigation("StockOrderItem")
-                        .IsRequired();
+                    b.Navigation("StockOrderItems");
 
                     b.Navigation("SupplierProducts");
                 });
