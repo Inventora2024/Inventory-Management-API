@@ -134,7 +134,7 @@ public class StockOrderController : ControllerBase
 
         var shipment = new Shipment
         {
-            LastUpdated = DateTime.UtcNow,
+            LastUpdated = DateTime.Now,
             Status = "Order Confirmed",
             StockOrderId = stockOrder.StockOrderId
         };
