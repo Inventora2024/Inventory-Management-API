@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UserController : ControllerBase
 {
     private readonly InventoryManagementDbContext _context;
@@ -22,6 +24,7 @@ public class UserController : ControllerBase
 
     // GET: api/User
     [HttpGet]
+    [Authorize(Roles = "Admin, Employee")]
     public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
     {
         var users = await _context.Users.ToListAsync();
@@ -31,6 +34,7 @@ public class UserController : ControllerBase
 
     // GET: api/User/5
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin, Employee")]
     public async Task<ActionResult<UserDTO>> GetUser(int id)
     {
         var user = await _context.Users.FindAsync(id);
@@ -46,6 +50,7 @@ public class UserController : ControllerBase
 
     // PUT: api/User/5
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin, Employee")]
     public async Task<IActionResult> PutUser(int id, UserDTO userDTO)
     {
         if (id != userDTO.UserId)
@@ -77,6 +82,7 @@ public class UserController : ControllerBase
 
     // POST: api/User
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<UserDTO>> PostUser(UserDTO userDTO)
     {
         var user = _mapper.Map<User>(userDTO);
@@ -88,6 +94,7 @@ public class UserController : ControllerBase
 
     // DELETE: api/User/5
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(int id)
     {
         var user = await _context.Users.FindAsync(id);
@@ -100,6 +107,16 @@ public class UserController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    // GET: api/User/display
+    [HttpGet("display")]
+    [Authorize(Roles = "Admin, Employee")]
+    public async Task<ActionResult<IEnumerable<UserDisplayDTO>>> GetUsersDisplay()
+    {
+        var users = await _context.Users.ToListAsync();
+        var userDisplayDTOs = _mapper.Map<List<UserDisplayDTO>>(users);
+        return userDisplayDTOs;
     }
 
     private bool UserExists(int id)

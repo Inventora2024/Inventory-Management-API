@@ -48,8 +48,19 @@ namespace Inventory_Management_API
             // Create Sale Mappings
             CreateMap<CreateSaleDTO, CustomerOrder>();
             CreateMap<CreateSaleItemDTO, CustomerOrderItem>();
+
+            // Create Display User Mappings
+            CreateMap<User, UserDisplayDTO>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Contact, opt => opt.MapFrom(src => src.Contact))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role));
+
+            CreateMap<User, LoginReturnDTO>();
+            CreateMap<LoginReturnDTO, User>();
         }
 
     }
-    
+
 }

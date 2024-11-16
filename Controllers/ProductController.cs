@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProductController : ControllerBase
 {
     private readonly InventoryManagementDbContext _context;
@@ -138,6 +140,7 @@ public class ProductController : ControllerBase
                 ProductName = product.ProductName,
                 Description = product.Description,
                 Image = product.Image,
+                StockQuantity = product.StockQuantity,
                 Category = product.ProductCategory.Category,
                 Nature = product.ProductCategory.Nature,
                 Suppliers = product.SupplierProducts.Select(sp => sp.Supplier.Company).ToList()
